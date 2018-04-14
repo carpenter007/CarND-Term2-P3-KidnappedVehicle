@@ -54,18 +54,17 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   // Add measurements to each particle
   for (int i = 0; i < num_particles; i++) {
 
-//    if (fabs(yaw_rate) < 0.00001)
-//    {
-//      particles[i].x += velocity * delta_t * cos(particles[i].theta);
-//      particles[i].y += velocity * delta_t * sin(particles[i].theta);
-//    }
-//    else
-//    {
-      particles[i].x = particles[i].x + ((velocity / yaw_rate) * ((sin(particles[i].theta) + (yaw_rate * delta_t)) - sin(particles[i].theta)));
-      particles[i].y = particles[i].y + ((velocity / yaw_rate) * ( cos(particles[i].theta) - (cos(particles[i].theta) + (yaw_rate * delta_t))));
-      particles[i].theta = particles[i].theta + (yaw_rate * delta_t);
-
- //   }
+    if (fabs(yaw_rate) < 0.00001)
+    {
+      particles[i].x += velocity * delta_t * cos(particles[i].theta);
+      particles[i].y += velocity * delta_t * sin(particles[i].theta);
+    }
+    else
+    {
+      particles[i].x += (velocity / yaw_rate) * (sin(particles[i].theta + (yaw_rate * delta_t)) - sin(particles[i].theta));
+      particles[i].y += (velocity / yaw_rate) * ( cos(particles[i].theta) - cos(particles[i].theta + (yaw_rate * delta_t)));
+      particles[i].theta += yaw_rate * delta_t;
+    }
 
     // Apply normal distributions for x, y and theta
     normal_distribution<double> dist_x(particles[i].x, std_pos[0]);
