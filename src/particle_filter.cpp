@@ -92,6 +92,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
       double dst = dist(landmark.x, landmark.y, observations[i].x, observations[i].y);
       if (dst < min_distance)
       {
+        min_distance = dst;
         nearest_landmark = landmark;
       }
       observations[i].id = nearest_landmark.id; /* Save landmark id */
