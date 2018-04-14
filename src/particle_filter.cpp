@@ -153,8 +153,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     // 4. Abweichung berechnen: Abstand von der Particle Position zu jedem Landmark der Karte minus die gemessenen Abstände zu jedem assiziertem Landmark.
     // calculate normalization term
-    double weight = 1.0;
-    double exponent = 0.0;
+    particles[i].weight = 1.0;
+    double exponentE = 0.0;
     for(LandmarkObs obsrv : observations_transf)
     {
       //calculate exponent
@@ -170,10 +170,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       else
       {
         // calculate weight using normalization terms and exponent
-        exponent= ((obsrv.x - it->x)*(obsrv.x - it->x))/(2 * std_landmark[0]* std_landmark[0]) + ((obsrv.y - - it->y)*(obsrv.y - - it->y))/(2 * std_landmark[1]*std_landmark[1]);
-
+        exponentE= -((pow(it->x - obsrv.x ,2))/(2 * pow(std_landmark[0],2)) + (pow(it->y- obsrv.y,2))/(2 * pow(std_landmark[1],2)));
         // 5. Neuberechnung des jeweiligen gewichtes für jedes Particle
-        particles[i].weight *= pow(gauss_norm, exponent);
+        particles[i].weight *= gauss_norm * exp(exponentE);
       }
     }
   }
