@@ -209,7 +209,7 @@ void ParticleFilter::resample() {
   vector<double> w;
   for(int i = 0; i < num_particles; i++)
   {
-    weights.push_back(particles[i].weight);
+    w.push_back(particles[i].weight);
   }
 
   // Get max weight
@@ -228,6 +228,7 @@ void ParticleFilter::resample() {
     }
     p_new.push_back(particles[index]);
   }
+  weights = w;
   particles = p_new;
 }
 
