@@ -115,23 +115,21 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
   double gauss_norm= (1/(2 * M_PI * std_landmark[0] * std_landmark[1]));
 
-  // Für jedes Particle Objekt:
+  // For each particle object
   for(int i = 0; i < num_particles; i++)
   {
-
-    // 1. Alle observations<in> in Map Koordinaten in Relation des jeweiligen Particel transformieren (observations_transf vector)
+    // 1. All input observations have to be transformed into map coordinates with respect to the current particle object -> create a observations_transf vector
     std::vector<LandmarkObs> observations_transf;
     for (LandmarkObs obsrv : observations)
     {
         LandmarkObs obs_t;
         // transformation requires both rotation AND translation from vehicle's to map's coordinate system
-
         obs_t.x = particles[i].x + (cos(particles[i].theta) * obsrv.x) - (sin(particles[i].theta) * obsrv.y); // x_map= x_part + (np.cos(theta) * x_obs) - (np.sin(theta) * y_obs)
         obs_t.y = particles[i].y + (sin(particles[i].theta) * obsrv.x) + (cos(particles[i].theta) * obsrv.y); // y_map= y_part + (np.sin(theta) * x_obs) + (np.cos(theta) * y_obs)
         //obs_t.id has to be set in dataAssisiation function
         observations_transf.push_back(obs_t);
     }
-    // 2. Predicted vector <LandmarkObs> erstellen.Predicted Landmarks sind nur die map_landmarks, die im sensor range sind!.
+    // 2. create predicted vector <LandmarkObs>. Predicted landmarks will be only these map_landmarks, which are in the sensor range.
     std::vector<LandmarkObs> predictedLmks;
     for (Map::single_landmark_s singleLmk : map_landmarks.landmark_list)
     {
@@ -145,13 +143,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       }
     }
 
-    // 3. Map und Observations miteinander Verknüpfen:
-    //    Aufruf von dataAssiciation, mit observation_trans als Referenzpointer "observations", und die map_landmarks als "predicted"
-    //    In den Observations werden dann die predicted (map_landmark) IDs zugewiesen, die der jeweiligen Observation am nächsten sind.
+    // 3. Assosiate map and observations:
+    //    Call of dataAssociation with observation_trans as a reference pointer and the choosen map_landmarks as "predicted" param.
+    //    In the observations_transf objects the IDs will be updated by the nearest predicted objects id (map landmark)
     dataAssociation(predictedLmks,observations_transf);
 
-
-    // 4. Abweichung berechnen: Abstand von der Particle Position zu jedem Landmark der Karte minus die gemessenen Abstände zu jedem assiziertem Landmark.
+    // 4. Calculate: Distance from the particle position to each landmark on the map, minus the calculated distance to each assosiated landmark.
     // calculate normalization term
     particles[i].weight = 1.0;
     double exponentE = 0.0;
@@ -171,7 +168,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       {
         // calculate weight using normalization terms and exponent
         exponentE= -((pow(it->x - obsrv.x ,2))/(2 * pow(std_landmark[0],2)) + (pow(it->y- obsrv.y,2))/(2 * pow(std_landmark[1],2)));
-        // 5. Neuberechnung des jeweiligen gewichtes für jedes Particle
+        // 5. Recalculation of the weight of each particle
         particles[i].weight *= gauss_norm * exp(exponentE);
       }
     }
@@ -183,7 +180,7 @@ void ParticleFilter::resample() {
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
-  /*
+  /* Pseudo code of random wheel:
    * p_new = []
    * index = int(random.random()*N)
    * beta = 0.0
